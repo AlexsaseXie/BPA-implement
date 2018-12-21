@@ -3,6 +3,7 @@
 //#include "Triangle.h"
 //#include "Pivoter.h"
 #include "Edge.h"
+#include "Triangle.h"
 #include <map>
 #include <list>
 
@@ -46,7 +47,7 @@ public:
 
 	inline bool has(const PointData &v1, const PointData &v2) {
 		for (auto it = front.begin(); it != front.end(); it++) {
-			if (it->vertices[0] == v1 && it->vertices[1] == v2) {
+			if (it->vertices[0].second == v1.second && it->vertices[1].second == v2.second) {
 				return true;
 			}
 		}
@@ -54,9 +55,9 @@ public:
 	}
 
 
-	void insert_triangle_edges(Triangle & tri);
-	void join(Edge & eij, PointData & ek);
-	void glue(PointData & ei, PointData & ek);
+	inline void insert_triangle_edges(Triangle & tri) {}
+	inline void join(Edge & eij, PointData & ek) {}
+	inline void glue(PointData & ei, PointData & ek) {}
 
 private:
 

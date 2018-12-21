@@ -25,7 +25,7 @@ public:
 		pt_used = vector<bool>(cloud.size(), 0);
 	}
 
-	void do_bpa(pcl::PointCloud<pcl::PointNormal> &cloud, pcl::PolygonMesh &mesh) {}
+	void do_bpa(pcl::PointCloud<pcl::PointNormal> &cloud, pcl::PolygonMesh &mesh);
 	EdgePtr get_active_edge();
 	void mark_as_boundary(EdgePtr eij);
 	PointData ball_pivot();
