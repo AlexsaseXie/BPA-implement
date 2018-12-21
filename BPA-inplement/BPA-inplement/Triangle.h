@@ -7,6 +7,9 @@
 using namespace std;
 using namespace pcl;
 
+class Triangle;
+typedef Triangle* TrianglePtr;
+
 class Triangle {
 public:
 	inline Triangle(){}

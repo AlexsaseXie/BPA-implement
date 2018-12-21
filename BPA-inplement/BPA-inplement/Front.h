@@ -55,7 +55,7 @@ public:
 	}
 
 
-	inline void insert_triangle_edges(Triangle & tri) {}
+	void insert_triangle_edges(Triangle & tri);
 	inline void join(Edge & eij, PointData & ek) {}
 	inline void glue(PointData & ei, PointData & ek) {}
 
