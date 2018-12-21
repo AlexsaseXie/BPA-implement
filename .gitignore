@@ -1,0 +1,11 @@
+BPA-inplement/*.db
+BPA-inplement/*.opendb
+
+BPA-inplement/x64/
+
+BPA-inplement/.vs
+
+BPA-inplement/BPA-inplement/x64/
+
+BPA-inplement/BPA-inplement/*.pcd
+BPA-inplement/BPA-inplement/*.ply
