@@ -174,8 +174,10 @@ pair<Triangle, bool> BPA::find_seed_triangle() {
 								if (!found)
 								{
 									std::cout << "\tSeed found (" << sequence[0] << ", " << sequence[1] << ", " << sequence[2] << ")\n";
-
-									Triangle tmp = Triangle(make_pair(&cloud->at((int)sequence[0]), sequence[0]), make_pair(&cloud->at((int)sequence[1]), sequence[1]), make_pair(&cloud->at((int)sequence[2]), sequence[2]));
+									Triangle tmp = Triangle(make_pair(&cloud->at((int)sequence[0]), sequence[0]),
+										make_pair(&cloud->at((int)sequence[1]), sequence[1]),
+										make_pair(&cloud->at((int)sequence[2]), sequence[2]),
+										ball_center, ball_radius);
 
 									set_used(index0);
 									set_used(index1);
