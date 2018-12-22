@@ -14,9 +14,11 @@ class Edge
 {
 public:
 	inline Edge() {
+		set_id();
 		active = true;
 	}
 	inline Edge(const PointData &_v0, const PointData &_v1, const PointData &_opposite, const pcl::PointNormal &_center) {
+		set_id();
 		vertices.push_back(_v0);
 		vertices.push_back(_v1);
 
@@ -36,14 +38,31 @@ public:
 		ball_center = _other.ball_center;
 		middle_point = _other.middle_point;
 		active = _other.active;
+		id = _other.id;
 	}
 	inline ~Edge() {}
 
 
-	Edge &operator=(const Edge &_other);
-	bool operator<(const Edge &_other) const;
-	bool operator==(const Edge &_other) const;
-	bool operator!=(const Edge &_other) const;
+	inline Edge &operator=(const Edge &_other) { 
+		this->vertices = _other.vertices; 
+		this->opposite_vertex = _other.opposite_vertex;
+		this->active = _other.active;
+		this->ball_center = _other.ball_center;
+		this->middle_point = _other.middle_point;
+		this->id = _other.id;
+		this->pivoting_r = _other.pivoting_r;
+	}
+	//bool operator<(const Edge &_other) const;
+	inline bool operator==(const Edge &_other) const {
+		if (this->vertices[0].second != _other.vertices[0].second)
+			return false;
+		if (this->vertices[1].second != _other.vertices[1].second)
+			return false;
+		if (this->opposite_vertex.second != _other.opposite_vertex.second)
+			return false;
+		return true;
+	}
+	//bool operator!=(const Edge &_other) const;
 
 
 private:

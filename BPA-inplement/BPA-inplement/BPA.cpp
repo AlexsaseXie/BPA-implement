@@ -11,23 +11,19 @@ void BPA::do_bpa(pcl::PointCloud<pcl::PointNormal> &cloud, pcl::PolygonMesh &mes
 		EdgePtr eij;
 
 		while (eij = get_active_edge()) {
-			PointData ek_data = ball_pivot(eij);
+			TrianglePtr tri = ball_pivot(eij);
+			PointData& ek_data = tri->points[1];
 			int ek_index = ek_data.second;
 			PointNormal &ek = *ek_data.first;
 
 			if (ek_index >= 0 && (pt_used[ek_index] == 0 || F.on_front(ek_data))) {
 				output_triangle(eij->vertices[0], eij->vertices[1], ek_data);
 
-				F.join(*eij, ek_data);
-				
-				
-				if (F.has(ek_data, eij->vertices[0])) {
-					F.glue(eij->vertices[0], ek_data);
-				}
+				// join & glue
+				F.join_glue(eij, ek_data, tri, pt_used[ek_index] == 1);
 
-				if (F.has(eij->vertices[1], ek_data)) {
-					F.glue(ek_data, eij->vertices[1]);
-				}
+				// set new point used
+				this->set_used(ek_index);
 			}
 			else {
 				mark_as_boundary(eij);
@@ -57,7 +53,7 @@ void BPA::mark_as_boundary(EdgePtr ek) {
 	ek->active = false;
 }
 
-PointData BPA::ball_pivot(EdgePtr eij) {
+TrianglePtr BPA::ball_pivot(EdgePtr eij) {
 	PointData v0 = eij->vertices[0];
 	PointData v1 = eij->vertices[1];
 	PointData op = eij->opposite_vertex;
@@ -125,11 +121,15 @@ PointData BPA::ball_pivot(EdgePtr eij) {
 		}
 	}
 
-	return output.first->points[1];
+	return output.first;
 }
 
 void BPA::output_triangle(const PointData &a, const PointData &b, const PointData &c) {
-	
+	vector<int> tmp;
+	tmp.push_back(a.second);
+	tmp.push_back(b.second);
+	tmp.push_back(c.second);
+	faces.push_back(tmp);
 }
 
 pair<Triangle, bool> BPA::find_seed_triangle() {

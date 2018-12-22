@@ -1,7 +1,5 @@
 #pragma once
 
-//#include "Triangle.h"
-//#include "Pivoter.h"
 #include "Edge.h"
 #include "Triangle.h"
 #include <map>
@@ -18,10 +16,14 @@ public:
 		auto it = front.begin();
 		while (it != front.end()) {
 			if (it->active == true) {
+				pos = it;
+
 				return &(*it);
 			}
 			it++;
 		}
+
+		pos = front.end();
 		return NULL;
 	}
 
@@ -56,12 +58,10 @@ public:
 
 
 	void insert_triangle_edges(Triangle & tri);
-	inline void join(Edge & eij, PointData & ek) {}
-	inline void glue(PointData & ei, PointData & ek) {}
+	void join_glue(EdgePtr eij, PointData & ek, TrianglePtr tri, bool is_used);
 
 private:
 
 	std::list<Edge> front;
 	std::list<Edge>::iterator pos;
-	//std::map<int, std::map<EdgePtr, std::list<EdgePtr>::iterator> > points;
 };

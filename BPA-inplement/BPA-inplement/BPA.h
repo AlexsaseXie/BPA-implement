@@ -17,7 +17,8 @@ using namespace pcl;
 
 class BPA {
 public:
-	inline BPA() {}
+	inline BPA(){}
+	inline BPA(int r) : ball_radius(r) {}
 	inline ~BPA() {}
 
 public:
@@ -29,6 +30,8 @@ public:
 	pcl::PointCloud<pcl::PointNormal> *cloud;
 	pcl::PolygonMesh *mesh;
 	pcl::KdTreeFLANN<pcl::PointNormal> kdtree;
+
+	vector<vector<int>> faces;
 
 public:
 	inline void init(pcl::PointCloud<pcl::PointNormal> &cloud, pcl::PolygonMesh &mesh) {
@@ -46,6 +49,8 @@ public:
 
 		//initialize kdtree
 		kdtree.setInputCloud(pcl::PointCloud<pcl::PointNormal>::Ptr(&cloud));
+
+		faces.clear();
 	}
 
 	inline void set_used(int index) {
@@ -57,7 +62,7 @@ public:
 	void do_bpa(pcl::PointCloud<pcl::PointNormal> &cloud, pcl::PolygonMesh &mesh);
 	EdgePtr get_active_edge();
 	void mark_as_boundary(EdgePtr eij);
-	PointData ball_pivot(EdgePtr eij);
+	TrianglePtr ball_pivot(EdgePtr eij);
 	void output_triangle(const PointData &a, const PointData &b, const PointData &c);
 	pair<Triangle, bool> find_seed_triangle();
 
