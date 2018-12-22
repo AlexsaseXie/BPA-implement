@@ -18,7 +18,7 @@ using namespace pcl;
 class BPA {
 public:
 	inline BPA(){}
-	inline BPA(int r) : ball_radius(r) {}
+	inline BPA(double r) : ball_radius(r) {}
 	inline ~BPA() {}
 
 public:

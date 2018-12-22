@@ -61,7 +61,6 @@ public:
 	void join_glue(EdgePtr eij, PointData & ek, TrianglePtr tri, bool is_used);
 
 private:
-
 	std::list<Edge> front;
 	std::list<Edge>::iterator pos;
 };

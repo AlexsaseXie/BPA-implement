@@ -12,6 +12,12 @@ void BPA::do_bpa(pcl::PointCloud<pcl::PointNormal> &cloud, pcl::PolygonMesh &mes
 
 		while (eij = get_active_edge()) {
 			TrianglePtr tri = ball_pivot(eij);
+
+			if (tri == NULL) {
+				mark_as_boundary(eij);
+				continue;
+			}
+
 			PointData& ek_data = tri->points[1];
 			int ek_index = ek_data.second;
 			PointNormal &ek = *ek_data.first;
@@ -75,7 +81,7 @@ TrianglePtr BPA::ball_pivot(EdgePtr eij) {
 	Eigen::Vector3f zero_angle = ((Eigen::Vector3f) (op.first->getVector3fMap() - middle)).normalized();
 	zero_angle = plane.projection(zero_angle).normalized();
 
-	double current_angle = M_PI;
+	double current_angle = 2 * M_PI;
 	std::pair<TrianglePtr, int> output = std::make_pair( TrianglePtr(), -1 );
 
 
@@ -130,10 +136,16 @@ void BPA::output_triangle(const PointData &a, const PointData &b, const PointDat
 	tmp.push_back(b.second);
 	tmp.push_back(c.second);
 	faces.push_back(tmp);
+
+	Vertices tmp1;
+	tmp1.vertices.push_back(a.second);
+	tmp1.vertices.push_back(b.second);
+	tmp1.vertices.push_back(c.second);
+	mesh->polygons.push_back(tmp1);
 }
 
 pair<Triangle, bool> BPA::find_seed_triangle() {
-	const double neighborhood_size = 2;
+	const double neighborhood_size = 1.5;
 
 	bool found = false;
 
