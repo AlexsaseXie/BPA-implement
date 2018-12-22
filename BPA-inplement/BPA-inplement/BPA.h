@@ -31,8 +31,6 @@ public:
 	pcl::PolygonMesh *mesh;
 	pcl::KdTreeFLANN<pcl::PointNormal> kdtree;
 
-	vector<vector<int>> faces;
-
 public:
 	inline void init(pcl::PointCloud<pcl::PointNormal> &cloud, pcl::PolygonMesh &mesh) {
 		pt_used.clear();
@@ -49,8 +47,6 @@ public:
 
 		//initialize kdtree
 		kdtree.setInputCloud(pcl::PointCloud<pcl::PointNormal>::Ptr(&cloud));
-
-		faces.clear();
 	}
 
 	inline void set_used(int index) {

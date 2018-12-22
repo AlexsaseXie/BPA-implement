@@ -6,16 +6,29 @@
 #include <pcl/io/vtk_lib_io.h>//loadPolygonFileOBJ所属头文件；
 #include <pcl/visualization/pcl_visualizer.h>
 #include <pcl/features/normal_3d.h>
+#include <string>
 #include "BPA.h"
+
+//#include <vtkAutoInit.h>
+//VTK_MODULE_INIT(vtkRenderingOpenGL);
+
 
 using namespace std;
 using namespace pcl;
 
 
-int main()
+int main(int argc, char *argv[])
 {
+	string input_file = "horse.ply";
+	double ball_radius = 0.0012;
+	if (argc > 1) {
+		input_file = string(argv[1]);
+		ball_radius = atof(argv[2]);
+	}
+	
+
 	pcl::PolygonMesh mesh;
-	pcl::io::loadPolygonFile("bunny.ply", mesh);
+	pcl::io::loadPolygonFile(input_file, mesh);
 
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
 	pcl::fromPCLPointCloud2(mesh.cloud, *cloud);
@@ -33,7 +46,7 @@ int main()
 	pcl::PointCloud<pcl::Normal>::Ptr cloud_normals(new pcl::PointCloud<pcl::Normal>);
 
 	//use all neighbours in a sphere of radius 3cm
-	ne.setKSearch(6);
+	ne.setKSearch(15);
 
 	//compute the features
 	//cloud_normals->points.size() should have the same size as the input cloud->points.size
@@ -46,12 +59,13 @@ int main()
 	pcl::PolygonMesh mesh1;
 	pcl::toPCLPointCloud2(*cloud_with_normals, mesh1.cloud);
 
-	BPA api(0.0015);
+	BPA api(ball_radius);
 	api.do_bpa(*cloud_with_normals, mesh1);
 
 
-	boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer(new pcl::visualization::PCLVisualizer("3D viewer A"));
+	pcl::visualization::PCLVisualizer::Ptr viewer(new pcl::visualization::PCLVisualizer("3D viewer A"));
 	viewer->addPolygonMesh(mesh1, "mesh");
+	//viewer->addPointCloudNormals<pcl::PointXYZ, pcl::Normal>(cloud, cloud_normals, 5, 5, "normals");
 
 	while (!viewer->wasStopped())
 	{

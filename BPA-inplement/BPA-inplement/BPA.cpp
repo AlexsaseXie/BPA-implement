@@ -36,6 +36,8 @@ void BPA::do_bpa(pcl::PointCloud<pcl::PointNormal> &cloud, pcl::PolygonMesh &mes
 			}
 		}
 
+		F.clear();
+
 		auto new_tri_data = find_seed_triangle();
 
 		if (new_tri_data.second) {
@@ -66,20 +68,22 @@ TrianglePtr BPA::ball_pivot(EdgePtr eij) {
 
 	PointNormal middle_point = eij->middle_point;
 	PointNormal ball_center = eij->ball_center;
-	//double pivoting_r = eij->pivoting_r;
 
 
-	// create plane
+	// create plane _|_ (v0 - v1) (the new ball center must be on this plane)
 	Eigen::Vector3f middle = middle_point.getVector3fMap();
-	Eigen::Vector3f diff1 = 100 * (v0.first->getVector3fMap() - middle);
-	Eigen::Vector3f diff2 = 100 * (ball_center.getVector3fMap() - middle);
+	//Eigen::Vector3f diff1 = 100 * (v0.first->getVector3fMap() - middle);
+	//Eigen::Vector3f diff2 = 100 * (ball_center.getVector3fMap() - middle);
 
-	Eigen::Vector3f y = diff1.cross(diff2).normalized();
-	Eigen::Vector3f normal = diff2.cross(y).normalized();
+	//Eigen::Vector3f y = diff1.cross(diff2).normalized();
+	//Eigen::Vector3f normal = diff2.cross(y).normalized();
+
+	Eigen::Vector3f normal = 100 * (v0.first->getArray3fMap() - v1.first->getArray3fMap());
+	normal = normal.normalized();
 	Eigen::Hyperplane<float, 3> plane = Eigen::Hyperplane<float, 3>(normal, middle);
 
-	Eigen::Vector3f zero_angle = ((Eigen::Vector3f) (op.first->getVector3fMap() - middle)).normalized();
-	zero_angle = plane.projection(zero_angle).normalized();
+	Eigen::Vector3f zero_angle = (ball_center.getVector3fMap() - middle).normalized();
+
 
 	double current_angle = 2 * M_PI;
 	std::pair<TrianglePtr, int> output = std::make_pair( TrianglePtr(), -1 );
@@ -97,10 +101,10 @@ TrianglePtr BPA::ball_pivot(EdgePtr eij) {
 		{
 			Eigen::Vector3f center;
 			Eigen::Vector3i sequence;
-			if (get_ball_center(v0.second, v1.second, index, center, sequence)){
+			if (get_ball_center(v0.second, index, v1.second, center, sequence)){
 				pcl::PointNormal new_ball_center = Util::make_pt_normal(center);
 				std::vector<int> neighborhood = get_neighbors(new_ball_center, ball_radius);
-				if (!is_empty(neighborhood, v0.second, v1.second, index, center)){
+				if (!is_empty(neighborhood, v0.second, index, v1.second, center)){
 					continue;
 				}
 
@@ -112,13 +116,14 @@ TrianglePtr BPA::ball_pivot(EdgePtr eij) {
 					continue;
 				}
 
-				Eigen::Vector3f projected_center = plane.projection(center);
-				double cos_angle = zero_angle.dot(projected_center.normalized());
+				//calc angle
+				Eigen::Vector3f new_vec = (center - middle).normalized();
+				double cos_angle = zero_angle.dot(new_vec);
 				if (fabs(cos_angle) > 1)
 					cos_angle = sign<double>(cos_angle);
 				double angle = acos(cos_angle);
 
-				// find a min angle pivoting the ball
+				// find a min angle by pivoting the ball
 				if (output.second == -1 || current_angle > angle){
 					current_angle = angle;
 					output = std::make_pair(TrianglePtr(new Triangle(v0, PointData(&cloud->points[index], index), v1)), index);
@@ -131,12 +136,6 @@ TrianglePtr BPA::ball_pivot(EdgePtr eij) {
 }
 
 void BPA::output_triangle(const PointData &a, const PointData &b, const PointData &c) {
-	vector<int> tmp;
-	tmp.push_back(a.second);
-	tmp.push_back(b.second);
-	tmp.push_back(c.second);
-	faces.push_back(tmp);
-
 	Vertices tmp1;
 	tmp1.vertices.push_back(a.second);
 	tmp1.vertices.push_back(b.second);
@@ -164,14 +163,14 @@ pair<Triangle, bool> BPA::find_seed_triangle() {
 			if (!found)
 			{
 				int index1 = indices[j];
-				if (index1 == index0 || find(unused_index.begin(), unused_index.end(), index1) == unused_index.end())
+				if (index1 == index0 || pt_used[index1] == true)
 					continue;
 
 				for (int k = j + 1; k < indices.size() && !found; k++)
 				{
 					int index2 = indices[k];
 
-					if (index1 == index2 || index2 == index0 || find(unused_index.begin(), unused_index.end(), index2) == unused_index.end())
+					if (index1 == index2 || index2 == index0 || pt_used[index2] == true)
 						continue;
 
 					Eigen::Vector3f center;
@@ -255,20 +254,19 @@ bool BPA::get_ball_center(const int _index0, const int _index1, const int _index
 
 bool BPA::is_empty(const std::vector<int> &_data, const int _index0, const int _index1, const int _index2, const Eigen::Vector3f &_ballCenter) const
 {
-	// TODO make this a little faster by making the query to the cloud here and using the distances already given by the query
 	if (_data.empty())
 		return true;
 
-	for (size_t i = 0; i < _data.size(); i++)
+	for (int i = 0; i < _data.size(); i++)
 	{
 		if (_data[i] == _index0 || _data[i] == _index1 || _data[i] == _index2)
 			continue;
 
 		Eigen::Vector3f dist = cloud->at(_data[i]).getVector3fMap() - _ballCenter;
-		if (std::fabs(dist.norm() - ball_radius) < IN_BALL_THRESHOLD)
+		if ( ( ball_radius - dist.norm() ) < IN_BALL_THRESHOLD)
 			continue;
-
-		return false;
+		else 
+			return false;
 	}
 
 	return true;

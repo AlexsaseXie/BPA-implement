@@ -8,18 +8,32 @@
 class Front
 {
 public:
-	inline Front() {}
+	inline Front() { pos = front.begin(); }
 	inline ~Front() {}
 
 public:
 	inline EdgePtr get_first_active() {
-		auto it = front.begin();
-		while (it != front.end()) {
+		auto it = pos;
+		bool first = true;
+
+		if (front.empty())
+			return NULL;
+
+		while (1) {
+			if (it == front.end()) {
+				it = front.begin();
+			}
+
+			if (it == pos && !first)
+				break;
+
 			if (it->active == true) {
 				pos = it;
 
 				return &(*it);
 			}
+			
+			first = false;
 			it++;
 		}
 
@@ -56,6 +70,10 @@ public:
 		return false;
 	}
 
+	inline void clear() {
+		front.clear();
+		pos = front.begin();
+	}
 
 	void insert_triangle_edges(Triangle & tri);
 	void join_glue(EdgePtr eij, PointData & ek, TrianglePtr tri, bool is_used);
