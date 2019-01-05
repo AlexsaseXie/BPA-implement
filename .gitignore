@@ -9,3 +9,9 @@ BPA-inplement/BPA-inplement/x64/
 
 BPA-inplement/BPA-inplement/*.pcd
 BPA-inplement/BPA-inplement/*.ply
+
+BPA-inplement/PoissonReco/x64/
+
+BPA-inplement/PoissonReco/*.pcd
+BPA-inplement/PoissonReco/*.ply
+

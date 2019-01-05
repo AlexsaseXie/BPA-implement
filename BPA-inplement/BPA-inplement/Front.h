@@ -3,13 +3,19 @@
 #include "Edge.h"
 #include "Triangle.h"
 #include <map>
+#include <vector>
 #include <list>
 
 class Front
 {
 public:
-	inline Front() { pos = front.begin(); }
+	inline Front() { front = list<Edge>(); pos = front.begin(); }
+	inline Front(int cloud_size) { front = list<Edge>(); pos = front.begin(); this->cloud_size = cloud_size; on_front_count = vector<int>(cloud_size, 0); }
 	inline ~Front() {}
+
+public:
+	vector<int> on_front_count;
+	int cloud_size;
 
 public:
 	inline EdgePtr get_first_active() {
@@ -42,12 +48,14 @@ public:
 	}
 
 	inline bool on_front(PointData &ek_data) {
-		for (auto it = front.begin(); it != front.end(); it++) {
+		/*for (auto it = front.begin(); it != front.end(); it++) {
 			if (it->vertices[0].second == ek_data.second || it->vertices[1].second == ek_data.second) {
 				return true;
 			}
 		}
-		return false;
+		return false;*/
+
+		return on_front_count[ek_data.second] > 0;
 	}
 
 	inline bool has(Edge &m) {
@@ -73,6 +81,9 @@ public:
 	inline void clear() {
 		front.clear();
 		pos = front.begin();
+		for (int i = 0; i < cloud_size; i++) {
+			on_front_count[i] = 0;
+		}
 	}
 
 	void insert_triangle_edges(Triangle & tri);

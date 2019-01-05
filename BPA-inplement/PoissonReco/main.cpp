@@ -17,7 +17,7 @@ using namespace pcl;
 
 int main(int argc, char *argv[])
 {
-	string input_file = "bunny.ply";
+	string input_file = "horse.ply";
 
 	if (argc > 1) {
 		input_file = string(argv[1]);

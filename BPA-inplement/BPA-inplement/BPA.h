@@ -36,6 +36,8 @@ public:
 		pt_used.clear();
 		unused_index.clear();
 
+		F = Front(cloud.size());
+
 		pt_used = vector<bool>(cloud.size(), 0);
 		this->cloud = &cloud;
 		this->mesh = &mesh;

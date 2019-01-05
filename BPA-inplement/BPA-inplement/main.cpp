@@ -7,24 +7,73 @@
 #include <pcl/visualization/pcl_visualizer.h>
 #include <pcl/features/normal_3d.h>
 #include <string>
+#include <set>
 #include "BPA.h"
-
-//#include <vtkAutoInit.h>
-//VTK_MODULE_INIT(vtkRenderingOpenGL);
-
 
 using namespace std;
 using namespace pcl;
 
 
+
+void merge(pcl::PolygonMesh& a, pcl::PolygonMesh &b) {
+	set<string> a_set;
+	for (auto &vs : a.polygons) {
+		int i0 = vs.vertices[0];
+		int i1 = vs.vertices[1];
+		int i2 = vs.vertices[2];
+		
+		if (i0 > i1) {
+			int t = i0;
+			i0 = i1;
+			i1 = t;
+		}
+
+		if (i1 > i2) {
+			int t = i1;
+			i1 = i2;
+			i2 = t;
+		}
+
+		a_set.insert(to_string(i0) + "," + to_string(i1) + "," + to_string(i2));
+	}
+
+	for (auto &vs : b.polygons) {
+		int i0 = vs.vertices[0];
+		int i1 = vs.vertices[1];
+		int i2 = vs.vertices[2];
+
+		if (i0 > i1) {
+			int t = i0;
+			i0 = i1;
+			i1 = t;
+		}
+
+		if (i1 > i2) {
+			int t = i1;
+			i1 = i2;
+			i2 = t;
+		}
+
+		string target = to_string(i0) + "," + to_string(i1) + "," + to_string(i2);
+
+		auto it = a_set.find(target);
+		if (it == a_set.end()) {
+			a.polygons.push_back(vs);
+		}
+	}
+}
+
 int main(int argc, char *argv[])
 {
-	string input_file = "horse.ply";
+	string input_file = "bunny.ply";
 	double ball_radius = 0.0012;
-	if (argc > 1) {
+	double ball_radius2 = 0.002;
+	if (argc > 1) 
 		input_file = string(argv[1]);
+	if (argc > 2)
 		ball_radius = atof(argv[2]);
-	}
+	if (argc > 3)
+		ball_radius = atof(argv[3]);
 	
 
 	pcl::PolygonMesh mesh;
@@ -46,7 +95,8 @@ int main(int argc, char *argv[])
 	pcl::PointCloud<pcl::Normal>::Ptr cloud_normals(new pcl::PointCloud<pcl::Normal>);
 
 	//use all neighbours in a sphere of radius 3cm
-	ne.setKSearch(15);
+	ne.setKSearch(18);
+	//ne.setRadiusSearch(0.003);
 
 	//compute the features
 	//cloud_normals->points.size() should have the same size as the input cloud->points.size
@@ -62,6 +112,15 @@ int main(int argc, char *argv[])
 	BPA api(ball_radius);
 	api.do_bpa(*cloud_with_normals, mesh1);
 
+	pcl::PolygonMesh mesh2;
+	pcl::toPCLPointCloud2(*cloud_with_normals, mesh2.cloud);
+
+	BPA api2(ball_radius2);
+	api2.do_bpa(*cloud_with_normals, mesh2);
+
+	cout << "Start Merge" << endl;
+
+	merge(mesh1, mesh2);
 
 	pcl::visualization::PCLVisualizer::Ptr viewer(new pcl::visualization::PCLVisualizer("3D viewer A"));
 	viewer->addPolygonMesh(mesh1, "mesh");

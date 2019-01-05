@@ -2,7 +2,7 @@
 
 #include <Eigen/src/Core/Matrix.h>
 
-#define IN_BALL_THRESHOLD	1e-7
+#define IN_BALL_THRESHOLD	1e-6
 
 void BPA::do_bpa(pcl::PointCloud<pcl::PointNormal> &cloud, pcl::PolygonMesh &mesh) {
 	init(cloud, mesh);
@@ -36,7 +36,9 @@ void BPA::do_bpa(pcl::PointCloud<pcl::PointNormal> &cloud, pcl::PolygonMesh &mes
 			}
 		}
 
-		F.clear();
+		
+		cout << "Finish Seed!" << endl;
+		//F.clear();
 
 		auto new_tri_data = find_seed_triangle();
 
@@ -84,6 +86,7 @@ TrianglePtr BPA::ball_pivot(EdgePtr eij) {
 
 	Eigen::Vector3f zero_angle = (ball_center.getVector3fMap() - middle).normalized();
 
+	Eigen::Vector3f u_normal = zero_angle.cross(normal);
 
 	double current_angle = 2 * M_PI;
 	std::pair<TrianglePtr, int> output = std::make_pair( TrianglePtr(), -1 );
@@ -109,19 +112,20 @@ TrianglePtr BPA::ball_pivot(EdgePtr eij) {
 				}
 
 				// Check the face is pointing upwards
-				Eigen::Vector3f vij = v1.first->getVector3fMap() - v0.first->getVector3fMap();
-				Eigen::Vector3f vik = point - v0.first->getVector3fMap();
-				Eigen::Vector3f face_normal = vik.cross(vij).normalized();
-				if (!Util::is_oriented(face_normal, (Eigen::Vector3f) v0.first->getNormalVector3fMap(), (Eigen::Vector3f) v1.first->getNormalVector3fMap(), (Eigen::Vector3f) cloud->at(index).getNormalVector3fMap())){
-					continue;
-				}
+				//Eigen::Vector3f vij = v1.first->getVector3fMap() - v0.first->getVector3fMap();
+				//Eigen::Vector3f vik = point - v0.first->getVector3fMap();
+				//Eigen::Vector3f face_normal = vik.cross(vij).normalized();
+				//if (!Util::is_oriented(face_normal, (Eigen::Vector3f) v0.first->getNormalVector3fMap(), (Eigen::Vector3f) v1.first->getNormalVector3fMap(), (Eigen::Vector3f) cloud->at(index).getNormalVector3fMap())){
+				//	continue;
+				//}
 
 				//calc angle
 				Eigen::Vector3f new_vec = (center - middle).normalized();
-				double cos_angle = zero_angle.dot(new_vec);
+				double cos_angle;
+				cos_angle = zero_angle.dot(new_vec);
 				if (fabs(cos_angle) > 1)
 					cos_angle = sign<double>(cos_angle);
-				double angle = acos(cos_angle);
+				double angle = new_vec.dot(u_normal) > 0 ? acos(cos_angle) : 2 * M_PI - acos(cos_angle);
 
 				// find a min angle by pivoting the ball
 				if (output.second == -1 || current_angle > angle){
@@ -263,10 +267,16 @@ bool BPA::is_empty(const std::vector<int> &_data, const int _index0, const int _
 			continue;
 
 		Eigen::Vector3f dist = cloud->at(_data[i]).getVector3fMap() - _ballCenter;
-		if ( ( ball_radius - dist.norm() ) < IN_BALL_THRESHOLD)
+		if ((ball_radius - dist.norm()) < IN_BALL_THRESHOLD) {
+			//cout << "Encounter ball_thershold! ";
+			//cout << "Tri:" << _index0 << "," << _index1 << "," << _index2 << "; ";
+			//cout << "Index:" << _data[i] << "; ";
+			//cout << "Distance:" << dist.norm() << endl;
 			continue;
-		else 
+		}
+		else {
 			return false;
+		}
 	}
 
 	return true;
