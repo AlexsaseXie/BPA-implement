@@ -19,11 +19,16 @@ void Front::insert_triangle_edges(Triangle &tri) {
 
 void Front::join_glue(EdgePtr eij, PointData & ek, TrianglePtr tri, bool is_used) {
 	if (!is_used) {
-		this->front.insert(pos ,Edge(tri->points[0], tri->points[1], tri->points[2], tri->ball_center));
-		this->front.insert(pos ,Edge(tri->points[1], tri->points[2], tri->points[0], tri->ball_center));
+		//this->front.insert(pos,Edge(tri->points[0], tri->points[1], tri->points[2], tri->ball_center));
+		//this->front.insert(pos ,Edge(tri->points[1], tri->points[2], tri->points[0], tri->ball_center));
+
+		this->front.push_back(Edge(tri->points[0], tri->points[1], tri->points[2], tri->ball_center));
+		this->front.push_back(Edge(tri->points[1], tri->points[2], tri->points[0], tri->ball_center));
 
 		this->front.erase(pos);
-		advance(pos, -2);
+		//advance(pos, -2);
+
+		advance(pos, 1);
 
 		on_front_count[tri->points[1].second] += 2;
 	}
@@ -45,7 +50,10 @@ void Front::join_glue(EdgePtr eij, PointData & ek, TrianglePtr tri, bool is_used
 				on_front_count[v1.vertices[0].second] += 1;
 				on_front_count[v1.vertices[1].second] += 1;
 				//no coincident edge
-				front.insert(pos, v1);
+				//front.insert(pos, v1);
+
+				front.push_back(v1);
+
 				added--;
 			}
 			else {
@@ -53,9 +61,9 @@ void Front::join_glue(EdgePtr eij, PointData & ek, TrianglePtr tri, bool is_used
 				on_front_count[it->vertices[1].second] -= 1;
 
 				//remove coincident edge
-				//front.erase(it);
+				front.erase(it);
 
-				it->active = false;
+				//it->active = false;
 			}
 		}
 
@@ -65,10 +73,14 @@ void Front::join_glue(EdgePtr eij, PointData & ek, TrianglePtr tri, bool is_used
 		front.erase(pos);
 
 		// Move iterator to the first added new edge
-		if (added < 0)
-			advance(pos, added);
-		else
+		//if (added < 0)
+		//	advance(pos, added);
+		//else
 			// Reset the position
+		//	pos = front.begin();
+
+		advance(pos, 1);
+		if (pos == front.end())
 			pos = front.begin();
 	}
 }
